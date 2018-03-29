@@ -194,6 +194,78 @@ public:
         recursive_balance_tree(&root, root, sorted_vec, 0, vec_len);
     }
 
+    Leaf<T>* find_predecessor (T x)
+    {
+        Leaf<T>*    pf = find_parent_for_foster_node(root, root, x);
+        if (pf == nullptr)
+            return nullptr;
+
+        /* Another way to do it if there was no parent pointer
+         * if (x > pf->val)
+         *     return pf;
+         *
+         * Leaf<T>* an = root;
+         * Leaf<T>* pred = null;
+         *
+         * while (an != pf) {
+         *     if (x < an->val)
+         *         an = an->left;
+         *     else
+         *         pred = an;
+         *         an = an->right;
+         * }
+         *
+         * return pred;
+         */
+        while (pf && x < pf->val)
+            pf = pf->parent;
+
+        return pf;
+    }
+
+    Leaf<T>* find_successor (T x)
+    {
+        Leaf<T>*    pf = find_parent_for_foster_node(root, root, x);
+
+        if (pf == nullptr)
+            return pf;
+
+        /* Another way to do it if there was no parent pointer
+         * if (x < pf->val)
+         *     return pf;
+         *
+         * Leaf<T>* an = root;
+         * Leaf<T>* suc = null;
+         *
+         * while (an != pf) {
+         *     if (x < an->val)
+         *         succ = an;
+         *         an = an->left;
+         *     else
+         *         an = an->right;
+         * }
+         * return succ;
+         */
+        while (pf && x > pf->val)
+            pf = pf->parent;
+
+        return pf;
+    }
+
+
+    Leaf<T>* find_parent_for_foster_node (Leaf<T>* l, Leaf<T> *p, T x)
+    {
+        if (l == nullptr) {
+            return p;
+        }
+
+        if (x < l->val) {
+            return find_parent_for_foster_node(l->left, l, x);
+        } else {
+            return find_parent_for_foster_node(l->right, l, x);
+        }
+    }
+
 private:
 
     /* @descr:  Recursive insertion. Starting from root, find the leaf where the new data belongs.
@@ -207,9 +279,8 @@ private:
     void recursive_insert (Leaf<T> **l, Leaf<T> *p, T data)
     {
         if (*l == nullptr) {
-            Leaf<T>* n = new Leaf<T>(data);
-            *l = n;
-            n->parent = p;
+            *l = new Leaf<T>(data);
+            (*l)->parent = p;
             return;
         }
 
