@@ -126,6 +126,39 @@ void bubble_sort (Iter begin, Iter end, Compare cmp)
     }
 }
 
+void __counting_sort (std::vector<int> &a, int exp)
+{
+    std::vector<int>   b(10, 0);
+    std::vector<int>   c(a.size(), 0);
+    int sum = 0;
+
+    for (const int &x: a) {
+        int index = (x / exp) % 10;
+        b[index]++;
+    }
+
+    for (int &count: b) {
+        sum += count;
+        count = sum;
+    }
+
+    for (auto it = a.rbegin(); it != a.rend(); it++) {
+        int index = ((*it)/ exp) % 10;
+        c[--b[index]] = *it;
+    }
+
+    std::move(c.begin(), c.end(), a.begin());
+}
+
+
+void radix_sort (std::vector<int> &a)
+{
+   auto max = max_element(a.begin(), a.end());
+
+   for (int exp = 1; (*max)/exp > 0; exp*=10) {
+       __counting_sort(a, exp);
+   }
+}
 
 template <typename Iter>
 bool bin_search (Iter begin, Iter end, typename Iter::value_type key)
