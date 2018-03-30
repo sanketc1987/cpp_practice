@@ -194,76 +194,46 @@ public:
         recursive_balance_tree(&root, root, sorted_vec, 0, vec_len);
     }
 
+    /* @descr:  Find the leaf whose value is just less than x. x may or maynot be in the tree
+     * @params: x  - Value to compare
+     * @state:  None
+     * return:  Predecessor leaf. Null if there is no predecessor
+     */
     Leaf<T>* find_predecessor (T x)
     {
-        Leaf<T>*    pf = find_parent_for_foster_node(root, root, x);
-        if (pf == nullptr)
-            return nullptr;
+        Leaf<T>*    l = root;
+        Leaf<T>*    pred = nullptr;
 
-        /* Another way to do it if there was no parent pointer
-         * if (x > pf->val)
-         *     return pf;
-         *
-         * Leaf<T>* an = root;
-         * Leaf<T>* pred = null;
-         *
-         * while (an != pf) {
-         *     if (x < an->val)
-         *         an = an->left;
-         *     else
-         *         pred = an;
-         *         an = an->right;
-         * }
-         *
-         * return pred;
-         */
-        while (pf && x < pf->val)
-            pf = pf->parent;
-
-        return pf;
+        while (l) {
+            if (x <= l->val) {
+                l = l->left;
+            } else {
+                pred = l;
+                l = l->right;
+            }
+        }
+        return pred;
     }
 
+    /* @descr:  Find the leaf whose value is just greaterthan x. x may or maynot be in the tree
+     * @params: x  - Value to compare
+     * @state:  None
+     * return:  Successor leaf. Null if there is no successor
+     */
     Leaf<T>* find_successor (T x)
     {
-        Leaf<T>*    pf = find_parent_for_foster_node(root, root, x);
+       Leaf<T>* l = root;
+       Leaf<T>* succ = nullptr;
 
-        if (pf == nullptr)
-            return pf;
-
-        /* Another way to do it if there was no parent pointer
-         * if (x < pf->val)
-         *     return pf;
-         *
-         * Leaf<T>* an = root;
-         * Leaf<T>* suc = null;
-         *
-         * while (an != pf) {
-         *     if (x < an->val)
-         *         succ = an;
-         *         an = an->left;
-         *     else
-         *         an = an->right;
-         * }
-         * return succ;
-         */
-        while (pf && x > pf->val)
-            pf = pf->parent;
-
-        return pf;
-    }
-
-
-    Leaf<T>* find_parent_for_foster_node (Leaf<T>* l, Leaf<T> *p, T x)
-    {
-        if (l == nullptr) {
-            return p;
-        }
-
-        if (x < l->val) {
-            return find_parent_for_foster_node(l->left, l, x);
-        } else {
-            return find_parent_for_foster_node(l->right, l, x);
-        }
+       while (l) {
+           if (x < l->val) {
+               succ = l;
+               l = l->left;
+           } else {
+               l = l->right;
+           }
+       }
+       return succ;
     }
 
 private:
