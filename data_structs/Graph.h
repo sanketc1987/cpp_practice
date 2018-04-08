@@ -275,12 +275,14 @@ private:
     {
         gmap[u].state = discovered;
         gmap[u].dfs_entry = ++dfs_time;
+
         gmap[u].dfs_low  = gmap[u].dfs_entry;
         process_vertex_early(u);
         for (auto edge : gmap[u].adj_list) {
             int v = edge.neghibor;
             process_edge_early(u, v);
             __name_dfs_edge(u, v);
+
             if (gmap[v].state == undiscovered) {
                 gmap[v].parent = u;
                 __dfs(v, process_vertex_early,
