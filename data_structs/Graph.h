@@ -16,23 +16,22 @@ private:
     enum edge_t  {unclassified=0, tree, forward, cross, back};
 
     struct Edge {
-        int        neghibor;
         size_t     weight;
         edge_t     edge_class;
 
-        Edge(int v, size_t w) :
-            neghibor(v), weight(w), edge_class(unclassified) {}
+        Edge() :
+            weight(0), edge_class(unclassified) {}
     };
 
     struct Vertex {
-        vector<Edge>        adj_list;
-        state_t             state;
-        size_t              degree;
-        int                 parent;
-        int                 dfs_entry;
-        int                 dfs_exit;
-        int                 dfs_low;
-        int                 dfs_treeout;
+        unordered_map<int, Edge>    adj_list;
+        state_t                     state;
+        size_t                      degree;
+        int                         parent;
+        int                         dfs_entry;
+        int                         dfs_exit;
+        int                         dfs_low;
+        int                         dfs_treeout;
 
         Vertex () :
             degree(0), state(undiscovered),
@@ -40,49 +39,39 @@ private:
             dfs_entry(0), dfs_exit(0)
         {}
 
-        Vertex (int v2, size_t weight) :
-            Vertex()
+        virtual ~Vertex () {}
+
+        void add_neghibor (int v, size_t weight)
         {
+            adj_list[v].weight = weight;
             degree++;
-            adj_list.push_back(Edge(v2, weight));
         }
 
-        virtual ~Vertex () {}
+        void classify_edge (int v, edge_t e)
+        {
+            adj_list[v].edge_class = e;
+        }
+
+        edge_t get_edge_class (int v)
+        {
+            return adj_list[v].edge_class;
+        }
 
         void display_adj_list () const
         {
             for (auto x : adj_list) {
-                cout << x.neghibor
+                cout << x.first
                     << "---->";
             }
             cout << "|";
         }
-
-        void classify_edge(int v, edge_t e)
-        {
-            for (Edge &edge: adj_list) {
-                if (edge.neghibor == v)
-                    edge.edge_class = e;
-            }
-        }
-
-        edge_t get_edge_class(int v)
-        {
-            for (Edge &edge: adj_list) {
-                if (edge.neghibor == v)
-                    return edge.edge_class;
-            }
-            return unclassified;
-        }
-
-
     };
 
-    unordered_map<int, Vertex>       gmap;
-    size_t                           nedges;
-    size_t                           nvertices;
-    bool                             directed;
-    size_t                           dfs_time;
+    unordered_map<int, Vertex>   gmap;
+    size_t                       nedges;
+    size_t                       nvertices;
+    bool                         directed;
+    size_t                       dfs_time;
 
 public:
     Graph(bool dir) :
@@ -130,8 +119,12 @@ public:
         __dfs(key, pv_early, pv_late, pe_early, pe_late);
     }
 
-    void find_path (int u, int v)
+    void find_bfs_path (int u, int v)
     {
+        if (directed) {
+            cout << "Not possible on directed graphs" << endl;
+            return;
+        }
         __init_graph();
         __bfs(u, [](int u){}, [](int u){},
             [](int u, int v){}, [](int u, int v){});
@@ -174,7 +167,7 @@ public:
                 }
             } else {
                 for (auto e : x.second.adj_list) {
-                    if (gmap[e.neghibor].dfs_low >= x.second.dfs_entry) {
+                    if (gmap[e.first].dfs_low >= x.second.dfs_entry) {
                         cout << x.first << "\t";
                         break;
                     }
@@ -198,19 +191,13 @@ private:
         }
     }
 
-    void __add_edge(const int v1, const int v2,
-            const size_t w, bool dir)
+    void __add_edge(const int u, const int v,
+                    const size_t w, bool dir)
     {
-        if (!gmap.count(v1)) {
-            gmap[v1] = Vertex(v2, w);
-            nvertices++;
-        } else {
-            gmap[v1].adj_list.push_back(Edge(v2, w));
-            gmap[v1].degree++;
-        }
+        gmap[u].add_neghibor(v, w);
 
         if (!dir) {
-            __add_edge(v2, v1, w, true);
+            __add_edge(v, u, w, true);
         } else {
             nedges++;
         }
@@ -230,7 +217,7 @@ private:
             int u = q.front();
             process_vertex_early(u);
             for (auto edge : gmap[u].adj_list) {
-                int v = edge.neghibor;
+                int v = edge.first;
                 process_edge_early(u, v);
                 if (gmap[v].state == undiscovered) {
                     gmap[v].state = discovered;
@@ -279,7 +266,7 @@ private:
         gmap[u].dfs_low  = gmap[u].dfs_entry;
         process_vertex_early(u);
         for (auto edge : gmap[u].adj_list) {
-            int v = edge.neghibor;
+            int v = edge.first;
             process_edge_early(u, v);
             __name_dfs_edge(u, v);
 
