@@ -194,18 +194,18 @@ public:
         recursive_balance_tree(&root, root, sorted_vec, 0, vec_len);
     }
 
-    /* @descr:  Find the leaf whose value is just less than x. x may or maynot be in the tree
-     * @params: x  - Value to compare
+    /* @descr:  Find the leaf whose value is just less than k. k may or maynot be in the tree
+     * @params: k  - Key whose predecessor is to be found
      * @state:  None
      * return:  Predecessor leaf. Null if there is no predecessor
      */
-    Leaf<T>* find_predecessor (T x)
+    Leaf<T>* find_predecessor (T k)
     {
         Leaf<T>*    l = root;
         Leaf<T>*    pred = nullptr;
 
         while (l) {
-            if (x <= l->val) {
+            if (k <= l->val) {
                 l = l->left;
             } else {
                 pred = l;
@@ -215,18 +215,18 @@ public:
         return pred;
     }
 
-    /* @descr:  Find the leaf whose value is just greaterthan x. x may or maynot be in the tree
-     * @params: x  - Value to compare
+    /* @descr:  Find the leaf whose value is just greaterthan k. k may or maynot be in the tree
+     * @params: k  - Key whose successor is to be found
      * @state:  None
      * return:  Successor leaf. Null if there is no successor
      */
-    Leaf<T>* find_successor (T x)
+    Leaf<T>* find_successor (T k)
     {
        Leaf<T>* l = root;
        Leaf<T>* succ = nullptr;
 
        while (l) {
-           if (x < l->val) {
+           if (k < l->val) {
                succ = l;
                l = l->left;
            } else {
@@ -234,6 +234,54 @@ public:
            }
        }
        return succ;
+    }
+
+    /* @descr:  Overloaded find_predecessor. Takes pointer to a node instead of a key
+     * @params: x - Pointer to node whose predecessor is to be found
+     * @state:  None
+     * return:  Successor leaf. Null if there is no successor
+     */
+    Leaf<T>* find_predecessor (Leaf<T> *x)
+    {
+        if (x == nullptr)
+            return nullptr;
+
+        if (x->left) {
+            return recursive_find_max(x->left);
+        }
+
+        Leaf<T>* y = x->parent;
+
+        while (y && x == y->left) {
+            x = y;
+            y = y->parent;
+        }
+
+        return y;
+    }
+
+    /* @descr:  Overloaded find_successor. Takes pointer to a node instead of a key
+     * @params: x - Pointer to node whose successor is to be found
+     * @state:  None
+     * return:  Successor leaf. Null if there is no successor
+     */
+    Leaf<T>* find_successor (Leaf<T> *x)
+    {
+        if (x == nullptr)
+            return nullptr;
+
+        if (x->right) {
+            return recursive_find_min(x->min);
+        }
+
+        Leaf<T>* y = x->parent;
+
+        while (y && x == y->right) {
+            x = y;
+            y = y->parent;
+        }
+
+        return y;
     }
 
 private:
@@ -325,7 +373,7 @@ private:
     {
         if (start == end) return;
 
-        size_t mid = (start + end) / 2;
+        size_t mid = start + (start - end) / 2;
         *l = new Leaf<T>(sv[mid]);
         (*l)->parent = p;
         recursive_balance_tree(&((*l)->left), *l, sv, start, mid);
